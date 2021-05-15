@@ -1,0 +1,14 @@
+{
+  "name": "ta-api",
+  "version": "0.1.0",
+  "main": "build/index.js",
+  "repository": "git@github.com:ta-assistant/TA-API.git",
+  "author": "Siratee K. <sirateek@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
+}
