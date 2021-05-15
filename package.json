@@ -6,9 +6,18 @@
   "author": "Siratee K. <sirateek@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "eslint": "^7.26.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "2.3.0",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^4.2.4"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint . --ext .ts"
   }
 }
