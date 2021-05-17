@@ -19,5 +19,9 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.11",
+    "express": "^4.17.1"
   }
 }
