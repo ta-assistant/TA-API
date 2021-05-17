@@ -1,8 +1,7 @@
 import { expressMiddleware } from "better-logging";
-import chalk from "chalk";
 import express, { Application } from "express";
 import config from "./config";
-import preStartScript from "./preStartScript/preStart";
+import preStartScript from "./preStartScript/preStartScript";
 
 const app: Application = express();
 
