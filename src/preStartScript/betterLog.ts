@@ -2,7 +2,7 @@ import betterLogging from "better-logging";
 import chalk from "chalk";
 import config from "../config";
 
-const betterLog = () => {
+function betterLog() {
   betterLogging(console, {
     color: {
       base: chalk.grey,
@@ -22,8 +22,6 @@ const betterLog = () => {
       warn: 0,
     },
   });
-};
-
-console.logLevel;
+}
 
 export = betterLog;
