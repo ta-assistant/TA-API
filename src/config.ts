@@ -1,26 +1,20 @@
 interface appConfig {
+  /* App port determine the port that this API will be run */
   appPort: Number;
+  /* Debug Mode */
   debug: boolean;
-  database: {
-    ip: String;
-    port: Number;
-    username: String;
-    password: String;
-  };
+  /* Firebase Admin Service Account File*/
+  firebaseAdminServiceAccount: string;
+}
+
+if (typeof process.env.TASERVICEACCOUNT === "undefined") {
+  throw new Error("No serviceAccount found in the process environment");
 }
 
 const config: appConfig = {
-  /* App port determine the port that this API will be run */
   appPort: 6001,
-  /* Debug Mode */
   debug: true,
-  /* Database Credential */
-  database: {
-    ip: "localhost",
-    port: 1,
-    username: "root",
-    password: "1234",
-  },
+  firebaseAdminServiceAccount: process.env.TASERVICEACCOUNT,
 };
 
 export = config;

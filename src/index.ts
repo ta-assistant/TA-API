@@ -1,12 +1,12 @@
 import { expressMiddleware } from "better-logging";
 import express, { Application } from "express";
 import config from "./config";
-import preStartScript from "./preStartScript/preStartScript";
+import preStartScriptHandler from "./preStartScript/preStartScriptHandler";
 
 const app: Application = express();
 
 // Run preStartScript
-preStartScript();
+preStartScriptHandler.run();
 
 // Middleware Setup
 // Use the bodyParser middleware to parse the JSON request
