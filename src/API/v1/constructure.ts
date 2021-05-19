@@ -19,7 +19,26 @@ export abstract class API {
     };
   }
 
-  sendResponse(res: Response, responseObj: APIResponse) {
+  /**
+   * This function is used to send the response to the caller
+   * @param res Response Object
+   * @param statusCode StatusCode you want to send response
+   * @param message Message you want to send response
+   * @param extendedObject Optional. The other object that will be send in the request
+   */
+  sendResponse(
+    res: Response,
+    statusCode: number,
+    message: string,
+    extendedObject?: object
+  ) {
+    let responseObj: APIResponse = {
+      statusCode: statusCode,
+      message: message,
+    };
+    if (typeof extendedObject === "object") {
+      responseObj = Object.assign(responseObj, extendedObject);
+    }
     console.info(responseObj);
     return res.status(responseObj.statusCode).send(responseObj);
   }
@@ -40,10 +59,12 @@ export enum ResponseStatusCode {
   success = 200,
   badRequest = 400,
   accessUnauthorized = 401,
+  forbidden = 403,
   internalServerError = 500,
 }
 
 export enum ResponseMessage {
+  success = "Success",
   noApiKeyFound = "The API Key was no found in your request. Access Denied.",
   invalidApiKey = "The API Key in your request is invalid, Access Denied.",
   invalidRequest = "This request is invalid. Please check the request body if it follow the API requirement",
