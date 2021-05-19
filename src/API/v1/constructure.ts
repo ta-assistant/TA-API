@@ -1,7 +1,33 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
+import Validator, { Rules } from "validatorjs";
 
 export abstract class API {
+  abstract requestStructure: Rules;
+
   abstract apiHandler(req: Request, res: Response): void;
+
+  validateRequestStructure(req: Request): RequestValidationResult {
+    let validation = new Validator(req.body, this.requestStructure);
+    if (validation.fails()) {
+      return {
+        isSuccess: false,
+        reason: validation.errors,
+      };
+    }
+    return {
+      isSuccess: true,
+    };
+  }
+
+  sendResponse(res: Response, responseObj: APIResponse) {
+    console.info(responseObj);
+    return res.status(responseObj.statusCode).send(responseObj);
+  }
+}
+
+interface RequestValidationResult {
+  isSuccess: boolean;
+  reason?: any;
 }
 
 export interface APIResponse {
