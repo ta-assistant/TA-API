@@ -61,6 +61,8 @@ async function TaApiMiddleWare(
     );
   }
   req.headers.userId = user;
+  req.headers.requestId =
+    Date.now().toString() + "-" + Math.random().toString(36).substring(2, 5);
   console.info("Authorized as " + user);
   next();
 }
