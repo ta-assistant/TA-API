@@ -2,6 +2,7 @@ import { expressMiddleware } from "better-logging";
 import express, { Application } from "express";
 import config from "./config";
 import preStartScriptHandler from "./preStartScript/preStartScriptHandler";
+import TaApiMiddleWare from "./API/middleWare";
 
 const app: Application = express();
 
@@ -13,6 +14,8 @@ preStartScriptHandler.run();
 app.use(express.json());
 // Use the better-logging expressMiddleWare to log the incomming request
 app.use(expressMiddleware(console));
+// Check the request permission with TaApiMiddleWare
+app.use(TaApiMiddleWare);
 
 app.get("/", (req, res) => {
   res.send("Success!");
