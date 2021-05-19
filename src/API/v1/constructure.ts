@@ -1,4 +1,4 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import Validator, { Rules } from "validatorjs";
 
 export abstract class API {
@@ -71,6 +71,7 @@ export enum ResponseMessage {
   noApiKeyFound = "The API Key was no found in your request. Access Denied.",
   invalidApiKey = "The API Key in your request is invalid, Access Denied.",
   invalidRequest = "This request is invalid. Please check the request body if it follow the API requirement",
+  jsonOnly = "TA APIs accept only request with the JSON Body.",
   unknownError = "Unknown error has occurred. Please contact administrator for more information.",
 }
 

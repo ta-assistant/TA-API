@@ -17,7 +17,7 @@ function sendDenieResponse(
     message: message,
     requestId: req.headers.requestId as string,
   };
-  console.info(responseObj);
+  console.info("Response: " + JSON.stringify(responseObj));
   return res.status(statsuCode).send(responseObj);
 }
 
@@ -46,12 +46,22 @@ async function TaApiMiddleWare(
   res: Response,
   next: NextFunction
 ) {
+  console.debug("[Request Headers] " + JSON.stringify(req.headers));
+  console.debug("[Request Body] " + JSON.stringify(req.body));
   if (typeof req.headers.authorization === "undefined") {
     return sendDenieResponse(
       req,
       res,
       ResponseStatusCode.accessUnauthorized,
       ResponseMessage.noApiKeyFound
+    );
+  }
+  if (req.headers["content-type"] !== "application/json") {
+    return sendDenieResponse(
+      req,
+      res,
+      ResponseStatusCode.badRequest,
+      ResponseMessage.jsonOnly
     );
   }
   const apiKey = req.headers.authorization;
