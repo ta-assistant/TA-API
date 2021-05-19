@@ -60,6 +60,7 @@ async function TaApiMiddleWare(
       ResponseMessage.invalidApiKey
     );
   }
+  req.headers.userId = user;
   console.info("Authorized as " + user);
   next();
 }
