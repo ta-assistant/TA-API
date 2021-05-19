@@ -11,7 +11,10 @@ function sendDenieResponse(
   statsuCode: ResponseStatusCode,
   message: ResponseMessage
 ) {
-  const responseObj = new APIResponse(statsuCode, message);
+  const responseObj: APIResponse = {
+    statusCode: statsuCode,
+    message: message,
+  };
   console.info(responseObj);
   return res.status(statsuCode).send(responseObj);
 }
