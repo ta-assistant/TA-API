@@ -3,7 +3,7 @@ import express, { Application } from "express";
 import config from "./config";
 import preStartScriptHandler from "./preStartScript/preStartScriptHandler";
 import TaApiMiddleWare from "./API/middleWare";
-import getJobDraftApi from "./API/v1/getJobDraftApi";
+import getWorkDraftApi from "./API/v1/getWorkDraftApi";
 
 const app: Application = express();
 
@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/v1/getJobDraft", (req, res) => {
-  getJobDraftApi.apiHandler(req, res);
+  getWorkDraftApi.apiHandler(req, res);
 });
 
 // Start the server on the configured port

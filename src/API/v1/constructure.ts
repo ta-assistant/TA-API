@@ -68,6 +68,7 @@ export enum ResponseMessage {
   noApiKeyFound = "The API Key was no found in your request. Access Denied.",
   invalidApiKey = "The API Key in your request is invalid, Access Denied.",
   invalidRequest = "This request is invalid. Please check the request body if it follow the API requirement",
+  unknownError = "Unknown error has occurred. Please contact administrator for more information.",
 }
 
 export enum APIMethod {
