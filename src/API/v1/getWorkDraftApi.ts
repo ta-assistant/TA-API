@@ -8,7 +8,7 @@ import admin from "firebase-admin";
  * Example request:
  *
  * curl -v -X POST {PREFIX}/v1/getWorkDraft \
- *   -H 'Authorization: Bearer {channel access token}' \
+ *   -H 'Authorization: ApiKey' \
  *   -H 'Content-Type: application/json' \
  *   -d '{
  *          'workId': "String"
