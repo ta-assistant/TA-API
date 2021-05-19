@@ -7,6 +7,7 @@ import {
 } from "./v1/constructure";
 
 function sendDenieResponse(
+  req: Request,
   res: Response,
   statsuCode: ResponseStatusCode,
   message: ResponseMessage
@@ -14,6 +15,7 @@ function sendDenieResponse(
   const responseObj: APIResponse = {
     statusCode: statsuCode,
     message: message,
+    requestId: req.headers.requestId as string,
   };
   console.info(responseObj);
   return res.status(statsuCode).send(responseObj);
@@ -46,6 +48,7 @@ async function TaApiMiddleWare(
 ) {
   if (typeof req.headers.authorization === "undefined") {
     return sendDenieResponse(
+      req,
       res,
       ResponseStatusCode.accessUnauthorized,
       ResponseMessage.noApiKeyFound
@@ -55,6 +58,7 @@ async function TaApiMiddleWare(
   const user = await getUserData(apiKey);
   if (!user) {
     return sendDenieResponse(
+      req,
       res,
       ResponseStatusCode.accessUnauthorized,
       ResponseMessage.invalidApiKey
@@ -64,6 +68,7 @@ async function TaApiMiddleWare(
   req.headers.requestId =
     Date.now().toString() + "-" + Math.random().toString(36).substring(2, 5);
   console.info("Authorized as " + user);
+  console.info("requestId: " + req.headers.requestId);
   next();
 }
 

@@ -4,6 +4,27 @@ import { ResponseStatusCode } from "./constructure";
 import { Rules } from "validatorjs";
 import admin from "firebase-admin";
 
+/**
+ * Example request:
+ *
+ * curl -v -X POST {PREFIX}/v1/getWorkDraft \
+ *   -H 'Authorization: Bearer {channel access token}' \
+ *   -H 'Content-Type: application/json' \
+ *   -d '{
+ *          'workId': "String"
+ *       }
+ *
+ * Example Success Response:
+ *
+ * {
+ *    "statusCode": 200,
+ *    "message": "Success",
+ *    "workDraft" : {
+ *              ....
+ *              ....
+ *          }
+ * }
+ */
 class GetWorkDraftApi extends API {
   requestStructure: Rules = {
     workId: "required|string",
@@ -13,6 +34,7 @@ class GetWorkDraftApi extends API {
     let validateStructure = this.validateRequestStructure(req);
     if (!validateStructure.isSuccess) {
       return this.sendResponse(
+        req,
         res,
         ResponseStatusCode.badRequest,
         ResponseMessage.invalidRequest,
@@ -25,8 +47,12 @@ class GetWorkDraftApi extends API {
     let userId: string = req.headers.userId as string;
     let workId: string = req.body.workId;
 
+    console.info("Requesting access to workDraft for workId: " + workId);
+
+    // Check if workId is exists.
     return this.checkworkIdExist(firestore, workId)
       .then((workDoc) => {
+        // Check user permission.
         return this.checkWorkAccessingPermission(
           firestore,
           workDoc.classroomId,
@@ -34,10 +60,13 @@ class GetWorkDraftApi extends API {
         );
       })
       .then(() => {
+        // Get workDraft.
         return this.getWorkDraft(firestore, workId);
       })
       .then((workDraftData) => {
+        // Send response.
         return this.sendResponse(
+          req,
           res,
           ResponseStatusCode.success,
           ResponseMessage.success,
@@ -45,22 +74,26 @@ class GetWorkDraftApi extends API {
         );
       })
       .catch((e) => {
+        // In case, There is an error
+        // Check for isExpectedThrown to determine
+        // if this is the predicted error
         if (e.isExpectedThrown) {
           return this.sendResponse(
+            req,
             res,
             e.statusCode,
             e.message,
             e.errorDetails
           );
         }
+
+        // In case Unknown error.
         console.error(e);
         return this.sendResponse(
+          req,
           res,
           ResponseStatusCode.internalServerError,
-          ResponseMessage.unknownError,
-          {
-            requestId: req.headers.requestId,
-          }
+          ResponseMessage.unknownError
         );
       });
   }
@@ -74,19 +107,23 @@ class GetWorkDraftApi extends API {
       .doc(workId)
       .get();
     if (!workDoc.exists) {
+      console.debug("Work Document not found");
       throw {
         statusCode: ResponseStatusCode.badRequest,
         message: GetWorkDraftApiResponseMessage.workIdNotFound,
         isExpectedThrown: true,
       } as APIResponse;
     }
-    if (typeof workDoc.data() === "undefined") {
+    console.debug("Work Document found");
+    if (typeof workDoc.data()?.classroomId === "undefined") {
+      let errorMessage = "The classroomId of this work is empty.";
+      console.error(errorMessage);
       throw {
         statusCode: ResponseStatusCode.internalServerError,
         message: GetWorkDraftApiResponseMessage.workBroken,
         isExpectedThrown: true,
         errorDetails: {
-          "Broken Detail": "The Work Document is empty",
+          errorDetails: errorMessage,
         },
       } as APIResponse;
     }
@@ -106,12 +143,14 @@ class GetWorkDraftApi extends API {
       .get();
 
     if (!classroomTeacher.exists) {
+      console.info("User don't have permission to access this work");
       throw {
         statusCode: ResponseStatusCode.forbidden,
         message: GetWorkDraftApiResponseMessage.insufficientPermission,
         isExpectedThrown: true,
       } as APIResponse;
     }
+    console.debug("User have permission to access this work");
   }
 
   private async getWorkDraft(
@@ -124,15 +163,15 @@ class GetWorkDraftApi extends API {
       .collection("workDraft")
       .doc("draft")
       .get();
-
+    console.debug("Requested work Draft: " + JSON.stringify(workDraft.data()));
     if (!workDraft.exists) {
+      console.debug("The work draft document doesn't exists");
       throw {
         statusCode: ResponseStatusCode.internalServerError,
         message: GetWorkDraftApiResponseMessage.workBroken,
         isExpectedThrown: true,
       } as APIResponse;
     }
-    console.debug(workDraft.data());
     return workDraft.data();
   }
 }

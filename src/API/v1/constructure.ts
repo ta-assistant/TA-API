@@ -27,6 +27,7 @@ export abstract class API {
    * @param extendedObject Optional. The other object that will be send in the request
    */
   sendResponse(
+    req: Request,
     res: Response,
     statusCode: number,
     message: string,
@@ -35,11 +36,12 @@ export abstract class API {
     let responseObj: APIResponse = {
       statusCode: statusCode,
       message: message,
+      requestId: req.headers.requestId as string,
     };
     if (typeof extendedObject === "object") {
       responseObj = Object.assign(responseObj, extendedObject);
     }
-    console.info(responseObj);
+    console.info("Response: " + JSON.stringify(responseObj));
     return res.status(responseObj.statusCode).send(responseObj);
   }
 }
@@ -52,6 +54,7 @@ interface RequestValidationResult {
 export interface APIResponse {
   statusCode: ResponseStatusCode;
   message: string;
+  requestId?: string;
   [key: string]: any;
 }
 
