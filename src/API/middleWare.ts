@@ -7,12 +7,17 @@ import {
 } from "./v1/constructure";
 
 function sendDenieResponse(
+  req: Request,
   res: Response,
   statsuCode: ResponseStatusCode,
   message: ResponseMessage
 ) {
-  const responseObj = new APIResponse(statsuCode, message);
-  console.info(responseObj);
+  const responseObj: APIResponse = {
+    statusCode: statsuCode,
+    message: message,
+    requestId: req.headers.requestId as string,
+  };
+  console.info("Response: " + JSON.stringify(responseObj));
   return res.status(statsuCode).send(responseObj);
 }
 
@@ -41,23 +46,39 @@ async function TaApiMiddleWare(
   res: Response,
   next: NextFunction
 ) {
+  console.debug("[Request Headers] " + JSON.stringify(req.headers));
+  console.debug("[Request Body] " + JSON.stringify(req.body));
   if (typeof req.headers.authorization === "undefined") {
     return sendDenieResponse(
+      req,
       res,
       ResponseStatusCode.accessUnauthorized,
       ResponseMessage.noApiKeyFound
+    );
+  }
+  if (req.headers["content-type"] !== "application/json") {
+    return sendDenieResponse(
+      req,
+      res,
+      ResponseStatusCode.badRequest,
+      ResponseMessage.jsonOnly
     );
   }
   const apiKey = req.headers.authorization;
   const user = await getUserData(apiKey);
   if (!user) {
     return sendDenieResponse(
+      req,
       res,
       ResponseStatusCode.accessUnauthorized,
       ResponseMessage.invalidApiKey
     );
   }
+  req.headers.userId = user;
+  req.headers.requestId =
+    Date.now().toString() + "-" + Math.random().toString(36).substring(2, 5);
   console.info("Authorized as " + user);
+  console.info("requestId: " + req.headers.requestId);
   next();
 }
 
