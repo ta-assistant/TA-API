@@ -3,7 +3,8 @@ import express, { Application } from "express";
 import config from "./config";
 import preStartScriptHandler from "./preStartScript/preStartScriptHandler";
 import TaApiMiddleWare from "./API/middleWare";
-import getWorkDraftApi from "./API/v1/getWorkDraftApi";
+import getWorkDraftApi from "./API/v1/WorkManagementApi/getWorkDraftApi";
+import submitScoreApi from "./API/v1/WorkManagementApi/submitScoreApi";
 
 const app: Application = express();
 
@@ -22,8 +23,11 @@ app.get("/", (req, res) => {
   res.send("Success!");
 });
 
-app.get("/v1/getJobDraft", (req, res) => {
+app.get("/v1/getWorkDraft", (req, res) => {
   getWorkDraftApi.apiHandler(req, res);
+});
+app.post("/v1/submitScore", (req, res) => {
+  submitScoreApi.apiHandler(req, res);
 });
 
 // Start the server on the configured port

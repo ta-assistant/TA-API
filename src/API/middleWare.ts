@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import admin from "firebase-admin";
-import {
-  APIResponse,
-  ResponseStatusCode,
-  ResponseMessage,
-} from "./v1/constructure";
+import { APIResponse } from "./v1/constructure";
+import { ResponseStatusCode, ResponseMessage } from "./v1/constructure";
 
 function sendDenieResponse(
   req: Request,
@@ -46,8 +43,8 @@ async function TaApiMiddleWare(
   res: Response,
   next: NextFunction
 ) {
-  console.debug("[Request Headers] " + JSON.stringify(req.headers));
-  console.debug("[Request Body] " + JSON.stringify(req.body));
+  console.info("[Request Headers] " + JSON.stringify(req.headers));
+  console.info("[Request Body] " + JSON.stringify(req.body));
   if (typeof req.headers.authorization === "undefined") {
     return sendDenieResponse(
       req,
