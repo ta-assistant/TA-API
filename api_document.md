@@ -35,6 +35,12 @@ Example:
 | --------------------------------------------------------------------------------------------------------------------------- | ----- |
 | The array of output template that will be used to generated score object. It's required to have `ID` as one of it's element | Array |
 
+### workId
+
+| Details                                                                                                                               | Type  |
+| ------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| The ID used to identify the work in the TA assistant. (It is the same as user specified by using `$ ta init --id {id}` in the TA CLI) | Array |
+
 ---
 
 ## Basic Requirement
