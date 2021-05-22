@@ -10,6 +10,8 @@ COPY . ./
 # Install Depedency
 RUN yarn install --frozen-lockfile
 
+RUN yarn build
+
 # Remove unuse ts code
 RUN rm -rf src
 
