@@ -78,6 +78,6 @@ export interface APIResponse {
 }
 
 export enum APIMethod {
-  GET,
-  POST,
+  GET = "GET",
+  POST = "POST",
 }

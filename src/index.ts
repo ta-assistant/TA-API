@@ -5,7 +5,12 @@ import preStartScriptHandler from "./preStartScript/preStartScriptHandler";
 import TaApiMiddleWare from "./API/middleWare";
 import getWorkDraftApi from "./API/v1/WorkManagementApi/getWorkDraftApi";
 import submitScoreApi from "./API/v1/WorkManagementApi/submitScoreApi";
-import { ResponseMessage, ResponseStatusCode } from "./API/v1/constructure";
+import {
+  APIMethod,
+  ResponseMessage,
+  ResponseStatusCode,
+} from "./API/v1/constructure";
+import apisList from "./API/apisList";
 
 const app: Application = express();
 
@@ -32,11 +37,27 @@ app.use(expressMiddleware(console));
 // Check the request permission with TaApiMiddleWare
 app.use(TaApiMiddleWare);
 
-app.get("/v1/workManagement/:workId/getWorkDraft/", (req, res) => {
-  getWorkDraftApi.apiHandler(req, res);
-});
-app.post("/v1/workManagement/:workId/submitScore/", (req, res) => {
-  submitScoreApi.apiHandler(req, res);
+// Extract all apis list from the apisList Config file.
+console.info("Extracting all apis from the apisList.ts config file");
+Object.keys(apisList).forEach((apiVersion) => {
+  console.debug(`=> ${apiVersion} apis`);
+  apisList[apiVersion].forEach((apisListElement) => {
+    let apiPath: string = `/${apiVersion}/${apisListElement.path}`;
+    console.debug(` |-> ${apisListElement.name}`);
+    console.debug(` | |- Path : ${apiPath}`);
+    console.debug(` | |- Method : ${apisListElement.apiMethod}`);
+
+    if (apisListElement.apiMethod === APIMethod.GET) {
+      app.get(apiPath, (req, res) => {
+        apisListElement.apiObject.apiHandler(req, res);
+      });
+    }
+    if (apisListElement.apiMethod === APIMethod.POST) {
+      app.post(apiPath, (req, res) => {
+        apisListElement.apiObject.apiHandler(req, res);
+      });
+    }
+  });
 });
 
 // 404-Not Found handler
