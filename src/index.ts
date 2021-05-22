@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 app.get("/v1/workManagement/:workId/getWorkDraft/", (req, res) => {
   getWorkDraftApi.apiHandler(req, res);
 });
-app.post("/v1/submitScore", (req, res) => {
+app.post("/v1/workManagement/:workId/submitScore/", (req, res) => {
   submitScoreApi.apiHandler(req, res);
 });
 
