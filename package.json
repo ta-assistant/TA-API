@@ -33,7 +33,9 @@
   },
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "start": "tsc && node .",
+    "start": "node .",
+    "build": "tsc",
+    "dev": "tsc && node .",
     "test": "mocha -r ts-node/register tests/**/*.test.ts --timeout 100000",
     "coverage": "nyc -r lcov -e .ts -x \"*.test.ts\" npm run test"
   }
