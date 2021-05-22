@@ -1,0 +1,17 @@
+# Import node12 lightweight image
+FROM node:12-slim
+
+# Create and set the work dir
+WORKDIR /usr/src/app
+
+# COPY our package into the container
+COPY . ./
+
+# Install Depedency
+RUN yarn install --frozen-lockfile
+
+# Remove unuse ts code
+RUN rm -rf src
+
+# Container entrypoint command
+CMD ["yarn", "start"]
