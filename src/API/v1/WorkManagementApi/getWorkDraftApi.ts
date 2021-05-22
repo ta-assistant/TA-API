@@ -30,17 +30,6 @@ class GetWorkDraftApi extends WorkManagementApi {
   requestStructure: Rules = {};
 
   apiHandler(req: Request, res: Response) {
-    if (typeof req.params.workId === "undefined") {
-      return this.sendResponse(
-        req,
-        res,
-        ResponseStatusCode.badRequest,
-        ResponseMessage.invalidRequest,
-        {
-          reasons: "No workId in your request",
-        }
-      );
-    }
     const firestore = admin.firestore();
     let userId: string = req.headers.userId as string;
     let workId: string = req.params.workId;
