@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
   res.send("Success!");
 });
 
-app.get("/v1/getWorkDraft", (req, res) => {
+app.get("/v1/workManagement/:workId/getWorkDraft/", (req, res) => {
   getWorkDraftApi.apiHandler(req, res);
 });
 app.post("/v1/submitScore", (req, res) => {
