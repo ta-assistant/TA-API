@@ -32,10 +32,6 @@ app.use(expressMiddleware(console));
 // Check the request permission with TaApiMiddleWare
 app.use(TaApiMiddleWare);
 
-app.get("/", (req, res) => {
-  res.send("Success!");
-});
-
 app.get("/v1/workManagement/:workId/getWorkDraft/", (req, res) => {
   getWorkDraftApi.apiHandler(req, res);
 });
