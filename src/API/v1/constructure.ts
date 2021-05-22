@@ -51,6 +51,7 @@ export enum ResponseStatusCode {
   badRequest = 400,
   accessUnauthorized = 401,
   forbidden = 403,
+  notFound = 404,
   internalServerError = 500,
 }
 
@@ -61,6 +62,7 @@ export enum ResponseMessage {
   invalidRequest = "This request is invalid. Please check the request body if it follow the API requirement",
   jsonOnly = "TA APIs accept only request with the JSON Body.",
   unknownError = "Unknown error has occurred. Please contact administrator for more information.",
+  resourceNotFound = "The resource you requested was not found. Please check the path again",
 }
 
 export interface RequestValidationResult {
