@@ -11,12 +11,9 @@ import {
 /**
  * Example request:
  *
- * curl -v -X POST {PREFIX}/v1/getWorkDraft \
+ * curl -v -X POST {PREFIX}/v1/getWorkDraft/{workId} \
  *   -H 'Authorization: ApiKey' \
  *   -H 'Content-Type: application/json' \
- *   -d '{
- *          'workId': "String"
- *       }
  *
  * Example Success Response:
  *
@@ -30,26 +27,12 @@ import {
  * }
  */
 class GetWorkDraftApi extends WorkManagementApi {
-  requestStructure: Rules = {
-    workId: "required|string",
-  };
+  requestStructure: Rules = {};
 
   apiHandler(req: Request, res: Response) {
-    let validateStructure = this.validateRequestStructure(req);
-    if (!validateStructure.isSuccess) {
-      return this.sendResponse(
-        req,
-        res,
-        ResponseStatusCode.badRequest,
-        ResponseMessage.invalidRequest,
-        {
-          reasons: validateStructure.reason.errors,
-        }
-      );
-    }
     const firestore = admin.firestore();
     let userId: string = req.headers.userId as string;
-    let workId: string = req.body.workId;
+    let workId: string = req.params.workId;
 
     console.info("Requesting access to workDraft for workId: " + workId);
 

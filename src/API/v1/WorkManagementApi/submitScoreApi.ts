@@ -10,7 +10,6 @@ import admin from "firebase-admin";
 
 class SubmitScoreApi extends WorkManagementApi {
   requestStructure: Rules = {
-    workId: "required|string",
     workDraft: "required",
     scores: "required|array",
   };
@@ -29,7 +28,7 @@ class SubmitScoreApi extends WorkManagementApi {
     }
 
     let firestore = admin.firestore();
-    let workId: string = req.body.workId;
+    let workId: string = req.params.workId;
     let userId: string = req.headers.userId as string;
     return this.checkworkIdExist(firestore, workId)
       .then(() => {
