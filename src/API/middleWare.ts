@@ -21,13 +21,13 @@ function sendDenieResponse(
 async function getUserData(apiKey: string) {
   const firestore = admin.firestore();
   let userCredentails: FirebaseFirestore.QuerySnapshot = await firestore
-    .collection("Users")
+    .collection("Keys")
     .where("apiKey", "==", apiKey)
     .get();
   if (userCredentails.size !== 1) {
     return false;
   }
-  return userCredentails.docs[0].data().userId;
+  return userCredentails.docs[0].id;
 }
 
 /**
