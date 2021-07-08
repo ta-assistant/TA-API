@@ -3,8 +3,6 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import config from "./config";
 import preStartScriptHandler from "./preStartScript/preStartScriptHandler";
 import TaApiMiddleWare from "./API/middleWare";
-import getWorkDraftApi from "./API/v1/WorkManagementApi/getWorkDraftApi";
-import submitScoreApi from "./API/v1/WorkManagementApi/submitScoreApi";
 import {
   APIMethod,
   ResponseMessage,
