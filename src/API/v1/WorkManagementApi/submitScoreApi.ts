@@ -11,7 +11,10 @@ import { ScoreElement } from "./types/submitScoreApiTypes";
 
 class SubmitScoreApi extends WorkManagementApi {
   requestStructure: Rules = {
-    workDraft: "required",
+    workDraft: {
+      outputDraft: "required|array",
+      fileDraft: "required|string",
+    },
     scores: "required|array",
   };
   async apiHandler(req: Request, res: Response) {
@@ -329,7 +332,6 @@ class SubmitScoreApi extends WorkManagementApi {
     let scores: Array<ScoreElement> = req.body.scores;
     let outputDraft: Array<any> = workDraft.outputDraft;
     let failedValidationElement: Array<any> = [];
-
     let outputDraftRule: Rules = {};
     let requiredOutputDraftProperty: Array<string> = [
       "score",
