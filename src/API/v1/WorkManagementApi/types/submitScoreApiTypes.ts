@@ -7,7 +7,7 @@ export type SubmitScoreApiBody = {
 };
 
 export type ScoreElement = {
-  ID: string;
+  studentId: string;
   score: number;
   [key: string]: any;
 };
