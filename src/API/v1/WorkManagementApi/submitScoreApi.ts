@@ -7,6 +7,7 @@ import {
   WorkManagementApiResponseMessage,
 } from "./constructure";
 import admin from "firebase-admin";
+import { ScoreElement } from "./types/submitScoreApiTypes";
 
 class SubmitScoreApi extends WorkManagementApi {
   requestStructure: Rules = {
@@ -74,14 +75,18 @@ class SubmitScoreApi extends WorkManagementApi {
   ) {
     let promiseArray: Array<Promise<FirebaseFirestore.WriteResult>> = [];
 
-    req.body.scores.forEach((element: any) => {
+    req.body.scores.forEach((element: ScoreElement) => {
       if (!existedIDs.includes(element.ID)) {
         let parsedDataObj: any = {};
 
         for (let elementPositionInWorkDraft in req.body.workDraft.outputDraft) {
           let elementInOutputDraft =
             req.body.workDraft.outputDraft[elementPositionInWorkDraft];
-          parsedDataObj[elementInOutputDraft] = element[elementInOutputDraft];
+          let value = element[elementInOutputDraft];
+          if (["score", "scoreTimestamp"].includes(elementInOutputDraft)) {
+            value = parseInt(value);
+          }
+          parsedDataObj[elementInOutputDraft] = value;
         }
         delete parsedDataObj.ID;
         let setFirestoreDoc = firestore
@@ -89,7 +94,12 @@ class SubmitScoreApi extends WorkManagementApi {
           .doc(workId)
           .collection("scores")
           .doc(element.ID)
-          .set(Object.assign({ scoredBy: userId }, parsedDataObj));
+          .set(
+            Object.assign(
+              { scoredBy: userId, submitTimestamp: Date.now() },
+              parsedDataObj
+            )
+          );
         promiseArray.push(setFirestoreDoc);
       }
     });
@@ -270,17 +280,38 @@ class SubmitScoreApi extends WorkManagementApi {
 
   checkScoresElementStructure(req: Request): RequestValidationResult {
     let workDraft = req.body.workDraft;
-    let scores: Array<any> = req.body.scores;
+    let scores: Array<ScoreElement> = req.body.scores;
     let outputDraft: Array<any> = workDraft.outputDraft;
     let failedValidationElement: Array<any> = [];
 
     let outputDraftRule: Rules = {};
 
-    for (let element in outputDraft) {
-      outputDraftRule[outputDraft[element]] = "required";
+    if (!outputDraft.includes("score")) {
+      return {
+        isSuccess: false,
+        reason: {
+          outputDraftPropertyMissing: ["score"],
+        },
+      } as RequestValidationResult;
     }
+    if (!outputDraft.includes("scoreTimestamp")) {
+      return {
+        isSuccess: false,
+        reason: {
+          outputDraftPropertyMissing: ["scoreTimestamp"],
+        },
+      } as RequestValidationResult;
+    }
+
+    outputDraft.forEach((element) => {
+      outputDraftRule[element] = "required";
+      if (["score", "scoreTimestamp"].includes(element)) {
+        outputDraftRule[element] += "|numeric";
+      }
+    });
+
     console.debug("Output Draft Check Rules" + JSON.stringify(outputDraftRule));
-    scores.forEach((scoreElement: object, i: number) => {
+    scores.forEach((scoreElement: ScoreElement, i: number) => {
       let validation = new Validator(scoreElement, outputDraftRule);
       if (validation.fails()) {
         failedValidationElement.push(
@@ -295,11 +326,11 @@ class SubmitScoreApi extends WorkManagementApi {
         reason: {
           scoreElementsValidationFailed: failedValidationElement,
         },
-      };
+      } as RequestValidationResult;
     }
     return {
       isSuccess: true,
-    };
+    } as RequestValidationResult;
   }
 }
 
