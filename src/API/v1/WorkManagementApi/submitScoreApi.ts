@@ -99,7 +99,7 @@ class SubmitScoreApi extends WorkManagementApi {
             req.body.workDraft.outputDraft[elementPositionInWorkDraft];
           let value = element[elementInOutputDraft];
           if (["score", "scoreTimestamp"].includes(elementInOutputDraft)) {
-            value = parseInt(value);
+            value = parseFloat(value);
           }
           parsedDataObj[elementInOutputDraft] = value;
         }
