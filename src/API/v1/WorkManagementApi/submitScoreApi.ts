@@ -1,4 +1,4 @@
-import { API, APIResponse, RequestValidationResult } from "../constructure";
+import { APIResponse, RequestValidationResult } from "../constructure";
 import { ResponseStatusCode, ResponseMessage } from "../constructure";
 import Validator, { Rules } from "validatorjs";
 import { Request, Response } from "express";
@@ -31,8 +31,10 @@ class SubmitScoreApi extends WorkManagementApi {
     let firestore = admin.firestore();
     let workId: string = req.params.workId;
     let userId: string = req.headers.userId as string;
+    let classroomId: string;
     return this.checkworkIdExist(firestore, workId)
-      .then(() => {
+      .then((workDoc: FirebaseFirestore.DocumentData) => {
+        classroomId = workDoc.classroomId;
         return this.checkWorkAccessPermission(firestore, workId, userId);
       })
       .then(() => {
@@ -46,6 +48,7 @@ class SubmitScoreApi extends WorkManagementApi {
           firestore,
           workId,
           userId,
+          classroomId,
           req,
           existedIDs
         );
@@ -58,6 +61,7 @@ class SubmitScoreApi extends WorkManagementApi {
           apiResponse.message,
           {
             existedIDs: apiResponse.existedIDs,
+            studentIdsNotEnrolled: apiResponse.studentIdsNotEnrolled,
           }
         );
       })
@@ -70,15 +74,26 @@ class SubmitScoreApi extends WorkManagementApi {
     firestore: FirebaseFirestore.Firestore,
     workId: string,
     userId: string,
+    classroomId: string,
     req: Request,
     existedIDs: Array<string>
   ) {
     let promiseArray: Array<Promise<FirebaseFirestore.WriteResult>> = [];
-
-    req.body.scores.forEach((element: ScoreElement) => {
-      if (!existedIDs.includes(element.ID)) {
+    let notFoundStudentId: Array<string> = [];
+    for (let elementIndex in req.body.scores) {
+      const element: ScoreElement = req.body.scores[elementIndex];
+      if (!existedIDs.includes(element.studentId)) {
+        if (
+          !(await this.checkStudentExists(
+            firestore,
+            element.studentId,
+            classroomId
+          ))
+        ) {
+          notFoundStudentId.push(element.studentId);
+          continue;
+        }
         let parsedDataObj: any = {};
-
         for (let elementPositionInWorkDraft in req.body.workDraft.outputDraft) {
           let elementInOutputDraft =
             req.body.workDraft.outputDraft[elementPositionInWorkDraft];
@@ -88,12 +103,12 @@ class SubmitScoreApi extends WorkManagementApi {
           }
           parsedDataObj[elementInOutputDraft] = value;
         }
-        delete parsedDataObj.ID;
+        delete parsedDataObj.studentId;
         let setFirestoreDoc = firestore
           .collection("Works")
           .doc(workId)
           .collection("scores")
-          .doc(element.ID)
+          .doc(element.studentId)
           .set(
             Object.assign(
               { scoredBy: userId, submitTimestamp: Date.now() },
@@ -102,7 +117,7 @@ class SubmitScoreApi extends WorkManagementApi {
           );
         promiseArray.push(setFirestoreDoc);
       }
-    });
+    }
     await Promise.all(promiseArray);
 
     let apiResponse: APIResponse = {
@@ -113,7 +128,38 @@ class SubmitScoreApi extends WorkManagementApi {
     if (existedIDs.length !== 0) {
       apiResponse["existedIDs"] = existedIDs;
     }
+    if (notFoundStudentId.length !== 0) {
+      apiResponse["studentIdsNotEnrolled"] = notFoundStudentId;
+    }
     return apiResponse;
+  }
+
+  async checkStudentExists(
+    firestore: FirebaseFirestore.Firestore,
+    studentId: string,
+    classroomId: string
+  ): Promise<boolean> {
+    const userSearch = await firestore
+      .collection("Users")
+      .where("studentId", "==", studentId)
+      .get();
+
+    if (userSearch.size !== 1) {
+      return false;
+    }
+
+    const userId: string = userSearch.docs[0].id;
+    const studentCheck = await firestore
+      .collection("Classrooms")
+      .doc(classroomId)
+      .collection("students")
+      .doc(userId)
+      .get();
+
+    if (!studentCheck.exists) {
+      return false;
+    }
+    return true;
   }
 
   async checkWorkAccessPermission(
@@ -173,14 +219,14 @@ class SubmitScoreApi extends WorkManagementApi {
     }
     let workDraftInDatabase: any = workDraftDocSnap.data() as object;
 
-    if (!workDraftInDatabase.outputDraft.includes("ID")) {
+    if (!workDraftInDatabase.outputDraft.includes("studentId")) {
       throw {
         statusCode: ResponseStatusCode.internalServerError,
         message: WorkManagementApiResponseMessage.workBroken,
         isExpectedThrown: true,
         reasons: {
           reasons:
-            "The workDraft must contain `ID`. But the workDraft in the database doesn't.",
+            "The workDraft must contain `studentId`. But the workDraft in the database doesn't.",
         },
       } as APIResponse;
     }
@@ -239,7 +285,7 @@ class SubmitScoreApi extends WorkManagementApi {
     console.debug("Checking if any docs already exists");
     let idArray: Array<string> = [];
     req.body.scores.forEach((element: any) => {
-      idArray.push(element.ID);
+      idArray.push(element.studentId);
     });
 
     console.debug("IDArray: " + idArray);
@@ -285,20 +331,22 @@ class SubmitScoreApi extends WorkManagementApi {
     let failedValidationElement: Array<any> = [];
 
     let outputDraftRule: Rules = {};
-
-    if (!outputDraft.includes("score")) {
+    let requiredOutputDraftProperty: Array<string> = [
+      "score",
+      "scoreTimestamp",
+      "studentId",
+    ];
+    let notFoundOutputDraftProperty: Array<string> = [];
+    requiredOutputDraftProperty.forEach((element: string) => {
+      if (!outputDraft.includes(element)) {
+        notFoundOutputDraftProperty.push(element);
+      }
+    });
+    if (notFoundOutputDraftProperty.length !== 0) {
       return {
         isSuccess: false,
         reason: {
-          outputDraftPropertyMissing: ["score"],
-        },
-      } as RequestValidationResult;
-    }
-    if (!outputDraft.includes("scoreTimestamp")) {
-      return {
-        isSuccess: false,
-        reason: {
-          outputDraftPropertyMissing: ["scoreTimestamp"],
+          outputDraftPropertyMissing: notFoundOutputDraftProperty,
         },
       } as RequestValidationResult;
     }
