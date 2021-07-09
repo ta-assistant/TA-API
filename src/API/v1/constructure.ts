@@ -33,6 +33,7 @@ export abstract class API {
     message: string,
     extendedObject?: object
   ) {
+    const packageJson = require("../../../package.json");
     let responseObj: APIResponse = {
       statusCode: statusCode,
       message: message,
@@ -42,6 +43,9 @@ export abstract class API {
       responseObj = Object.assign(responseObj, extendedObject);
     }
     console.info("Response: " + JSON.stringify(responseObj));
+    res.set({
+      TaApiVersion: packageJson.version,
+    });
     return res.status(responseObj.statusCode).send(responseObj);
   }
 }
