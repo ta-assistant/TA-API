@@ -38,7 +38,7 @@ class SubmitScoreApi extends WorkManagementApi {
     return this.checkworkIdExist(firestore, workId)
       .then((workDoc: FirebaseFirestore.DocumentData) => {
         classroomId = workDoc.classroomId;
-        return this.checkWorkAccessPermission(firestore, workId, userId);
+        return this.checkWorkAccessPermission(firestore, classroomId, userId);
       })
       .then(() => {
         return this.checkWorkDraft(firestore, workId, req.body.workDraft);
@@ -46,14 +46,14 @@ class SubmitScoreApi extends WorkManagementApi {
       .then(() => {
         return this.checkIfDocAlreadyExists(firestore, workId, req);
       })
-      .then((existedIDs) => {
+      .then((existedScoreData) => {
         return this.writeScoresToDatabase(
           firestore,
           workId,
           userId,
           classroomId,
           req,
-          existedIDs
+          existedScoreData
         );
       })
       .then((apiResponse: APIResponse) => {
@@ -63,7 +63,7 @@ class SubmitScoreApi extends WorkManagementApi {
           apiResponse.statusCode,
           apiResponse.message,
           {
-            existedIDs: apiResponse.existedIDs,
+            existedScoreData: apiResponse.existedScoreData,
             studentIdsNotEnrolled: apiResponse.studentIdsNotEnrolled,
           }
         );
@@ -79,13 +79,13 @@ class SubmitScoreApi extends WorkManagementApi {
     userId: string,
     classroomId: string,
     req: Request,
-    existedIDs: Array<string>
+    existedScoreData: Array<string>
   ) {
     let promiseArray: Array<Promise<FirebaseFirestore.WriteResult>> = [];
     let notFoundStudentId: Array<string> = [];
     for (let elementIndex in req.body.scores) {
       const element: ScoreElement = req.body.scores[elementIndex];
-      if (!existedIDs.includes(element.studentId)) {
+      if (!existedScoreData.includes(element.studentId)) {
         if (
           !(await this.checkStudentExists(
             firestore,
@@ -128,8 +128,8 @@ class SubmitScoreApi extends WorkManagementApi {
       message: ResponseMessage.success,
     };
     console.debug("Writed all scores to the database");
-    if (existedIDs.length !== 0) {
-      apiResponse["existedIDs"] = existedIDs;
+    if (existedScoreData.length !== 0) {
+      apiResponse["existedScoreData"] = existedScoreData;
     }
     if (notFoundStudentId.length !== 0) {
       apiResponse["studentIdsNotEnrolled"] = notFoundStudentId;
@@ -167,17 +167,17 @@ class SubmitScoreApi extends WorkManagementApi {
 
   async checkWorkAccessPermission(
     firestore: FirebaseFirestore.Firestore,
-    workId: string,
+    classroomId: string,
     userId: string
   ) {
-    let examinerDoc: FirebaseFirestore.DocumentSnapshot = await firestore
-      .collection("Works")
-      .doc(workId)
-      .collection("examiner")
+    let teacherDoc: FirebaseFirestore.DocumentSnapshot = await firestore
+      .collection("Classrooms")
+      .doc(classroomId)
+      .collection("teachers")
       .doc(userId)
       .get();
 
-    if (!examinerDoc.exists) {
+    if (!teacherDoc.exists) {
       throw {
         statusCode: ResponseStatusCode.forbidden,
         message: WorkManagementApiResponseMessage.insufficientPermission,
